@@ -1,0 +1,14 @@
+services:
+  pharmadocs:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-please-change-this-to-a-long-random-string}
+      LLM_API_KEY: ${LLM_API_KEY:-}          # optional: Groq / OpenAI key
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.groq.com/openai/v1}
+      LLM_MODEL: ${LLM_MODEL:-llama-3.1-8b-instant}
+    volumes:
+      - pharmadocs-data:/app/instance
+volumes:
+  pharmadocs-data:
