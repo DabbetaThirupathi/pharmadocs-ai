@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PharmaDocs AI · GMP Knowledge Assistant</title>
+<style>
+  :root { --bg:#f5f7fa; --card:#fff; --ink:#1d2433; --muted:#667085; --brand:#0b6e69; --brand-2:#e6f4f3;
+          --warn:#b54708; --bad:#b42318; --ok:#067647; --line:#e4e7ec; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); }
+  header { background:var(--brand); color:#fff; padding:14px 28px; display:flex; justify-content:space-between; align-items:center; }
+  header h1 { font-size:18px; margin:0; letter-spacing:.3px; }
+  header small { opacity:.8; }
+  main { max-width:1100px; margin:24px auto; padding:0 16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:20px; margin-bottom:18px; }
+  .tabs { display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; }
+  .tabs button { background:#fff; border:1px solid var(--line); padding:8px 14px; border-radius:8px; cursor:pointer; font-size:14px; }
+  .tabs button.active { background:var(--brand); color:#fff; border-color:var(--brand); }
+  input, textarea, select { width:100%; padding:10px; border:1px solid var(--line); border-radius:8px; font:inherit; }
+  textarea { min-height:90px; resize:vertical; }
+  .btn { background:var(--brand); color:#fff; border:0; padding:10px 18px; border-radius:8px; cursor:pointer; font-weight:600; }
+  .row { display:flex; gap:10px; }
+  .answer { white-space:pre-wrap; line-height:1.55; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:99px; font-size:12px; font-weight:600; }
+  .b-ok { background:#ecfdf3; color:var(--ok);} .b-warn{background:#fffaeb;color:var(--warn);} .b-bad{background:#fef3f2;color:var(--bad);}
+  .cite { border-left:3px solid var(--brand); background:var(--brand-2); padding:8px 12px; margin:8px 0; border-radius:4px; font-size:13px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; }
+  .muted { color:var(--muted); font-size:13px; }
+  .hidden { display:none; }
+  pre { background:#0f172a; color:#e2e8f0; padding:14px; border-radius:8px; overflow:auto; font-size:12px; }
+</style>
+</head>
+<body>
+<header>
+  <div><h1>PharmaDocs AI</h1><small>GMP knowledge assistant · answers only from approved SOPs</small></div>
+  <div id="who"></div>
+</header>
+<main>
+  <section id="login" class="card" style="max-width:420px;margin:60px auto">
+    <h2 style="margin-top:0">Sign in</h2>
+    <p class="muted">Demo: op.anil / Oper@1234 · qa.priya / Qa@12345 · admin / Admin@123</p>
+    <input id="u" placeholder="Username" value="qa.priya"><br><br>
+    <input id="p" type="password" placeholder="Password" value="Qa@12345"><br><br>
+    <button class="btn" onclick="login()">Sign in</button>
+    <p id="loginErr" class="muted"></p>
+  </section>
+
+  <section id="app" class="hidden">
+    <div class="tabs">
+      <button data-tab="ask" class="active">Ask SOPs</button>
+      <button data-tab="dev">Deviation Assistant</button>
+      <button data-tab="docs">Documents</button>
+      <button data-tab="audit">Audit Trail</button>
+    </div>
+
+    <div id="tab-ask" class="card">
+      <div class="row">
+        <input id="q" placeholder="e.g. How long can sterilised parts be held before use?">
+        <button class="btn" onclick="ask()">Ask</button>
+      </div>
+      <div id="ans" style="margin-top:18px"></div>
+    </div>
+
+    <div id="tab-dev" class="card hidden">
+      <p class="muted">Describe what happened. The assistant drafts a structured deviation report for QA review.</p>
+      <textarea id="devText" placeholder="e.g. During filling of batch GLN2611A the differential pressure alarm between filling room and corridor stayed below 10 Pa for 12 minutes."></textarea><br><br>
+      <button class="btn" onclick="draftDev()">Draft deviation report</button>
+      <div id="devOut" style="margin-top:16px"></div>
+    </div>
+
+    <div id="tab-docs" class="card hidden">
+      <table id="docTable"></table>
+    </div>
+
+    <div id="tab-audit" class="card hidden">
+      <div class="row" style="align-items:center;justify-content:space-between">
+        <span id="chain" class="muted"></span>
+        <button class="btn" onclick="loadAudit()">Refresh</button>
+      </div>
+      <table id="auditTable" style="margin-top:12px"></table>
+    </div>
+  </section>
+</main>
+<script>
+let token = null, me = null;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, { ...opts, headers: { "Content-Type": "application/json",
+            ...(token ? { Authorization: "Bearer " + token } : {}) } });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+async function login() {
+  try {
+    const d = await api("/api/auth/login", { method: "POST", body: JSON.stringify({ username: $("u").value, password: $("p").value }) });
+    token = d.token; me = d.user;
+    $("who").textContent = `${me.full_name} · ${me.role}`;
+    $("login").classList.add("hidden"); $("app").classList.remove("hidden");
+  } catch (e) { $("loginErr").textContent = e.message; }
+}
+
+document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".tabs button").forEach(x => x.classList.remove("active"));
+  b.classList.add("active");
+  ["ask","dev","docs","audit"].forEach(t => $("tab-" + t).classList.toggle("hidden", t !== b.dataset.tab));
+  if (b.dataset.tab === "docs") loadDocs();
+  if (b.dataset.tab === "audit") loadAudit();
+});
+$("q").addEventListener("keydown", e => { if (e.key === "Enter") ask(); });
+
+async function ask() {
+  const q = $("q").value.trim(); if (!q) return;
+  $("ans").innerHTML = '<p class="muted">Searching approved documents…</p>';
+  try {
+    const d = await api("/api/ask", { method: "POST", body: JSON.stringify({ question: q }) });
+    const badge = d.grounded ? `<span class="badge b-ok">Grounded · confidence ${d.confidence}</span>`
+                             : `<span class="badge b-warn">Not found · confidence ${d.confidence}</span>`;
+    $("ans").innerHTML = `${badge} <span class="muted">mode: ${esc(d.mode)}</span>
+      <div class="answer" style="margin-top:10px">${esc(d.answer)}</div>
+      ${d.citations.map(c => `<div class="cite"><b>${esc(c.doc_number)} v${c.version}</b> — ${esc(c.title)} · §${esc(c.section)}<br><span class="muted">${esc(c.snippet)}…</span></div>`).join("")}`;
+  } catch (e) { $("ans").innerHTML = `<span class="badge b-bad">${esc(e.message)}</span>`; }
+}
+
+async function draftDev() {
+  try {
+    const d = await api("/api/deviations/draft", { method: "POST", body: JSON.stringify({ description: $("devText").value }) });
+    const cls = { CRITICAL: "b-bad", MAJOR: "b-warn", MINOR: "b-ok" }[d.classification];
+    $("devOut").innerHTML = `<h3>${esc(d.dev_number)} <span class="badge ${cls}">${d.classification}</span></h3>
+      <p><b>Area:</b> ${esc(d.area)} · <b>Batch:</b> ${esc(d.batch_number || "—")} · <b>Status:</b> ${esc(d.status)}</p>
+      <p><b>Related SOPs:</b> ${d.related_sops.map(s => esc(`${s.doc_number} v${s.version} (${s.title})`)).join("; ") || "—"}</p>
+      <pre>${esc(JSON.stringify(d, null, 2))}</pre>`;
+  } catch (e) { $("devOut").innerHTML = `<span class="badge b-bad">${esc(e.message)}</span>`; }
+}
+
+async function loadDocs() {
+  const rows = await api("/api/documents");
+  const st = s => `<span class="badge ${s === "EFFECTIVE" ? "b-ok" : s === "OBSOLETE" ? "b-bad" : "b-warn"}">${s}</span>`;
+  $("docTable").innerHTML = "<tr><th>Doc No.</th><th>Title</th><th>Ver</th><th>Dept</th><th>Status</th><th>Access</th><th>Effective</th></tr>" +
+    rows.map(r => `<tr><td>${esc(r.doc_number)}</td><td>${esc(r.title)}</td><td>${r.version}</td><td>${esc(r.department)}</td><td>${st(r.status)}</td><td>${esc(r.access_level)}</td><td>${esc(r.effective_date)}</td></tr>`).join("");
+}
+
+async function loadAudit() {
+  try {
+    const v = await api("/api/audit/verify");
+    $("chain").innerHTML = v.valid ? `<span class="badge b-ok">Hash chain intact · ${v.entries} entries</span>`
+                                   : `<span class="badge b-bad">Chain broken at entry ${v.broken_at}</span>`;
+    const rows = await api("/api/audit?limit=200");
+    $("auditTable").innerHTML = "<tr><th>#</th><th>Time (UTC)</th><th>User</th><th>Action</th><th>Details</th><th>Hash</th></tr>" +
+      rows.map(r => `<tr><td>${r.id}</td><td>${esc(r.ts)}</td><td>${esc(r.username)}</td><td>${esc(r.action)}</td>
+        <td class="muted">${esc(JSON.stringify(r.details || {}))}</td><td class="muted">${esc(r.entry_hash.slice(0, 12))}…</td></tr>`).join("");
+  } catch (e) { $("chain").innerHTML = `<span class="badge b-bad">${esc(e.message)} (QA/Admin only)</span>`; }
+}
+</script>
+</body>
+</html>
