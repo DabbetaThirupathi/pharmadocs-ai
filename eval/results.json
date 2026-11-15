@@ -1,0 +1,223 @@
+{
+  "metrics": {
+    "questions": 35,
+    "hit@1": 1.0,
+    "hit@3": 1.0,
+    "answer_accuracy": 0.833,
+    "guard_precision": 1.0,
+    "citation_validity": 1.0,
+    "answer_mode": "extractive (offline)"
+  },
+  "rows": [
+    [
+      "How long can sterilised parts be held before use?",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "What is the exposure temperature and time for the porous loa",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "What should I do if the autoclave cycle fails?",
+      "top1",
+      "WRONG",
+      "FAIL"
+    ],
+    [
+      "What steam supply pressure is required before starting the s",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "Which test must pass at the start of the day before using th",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "How often must gloves be sanitised in Grade A?",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "How long should hands be washed during gowning?",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "How often must gowning qualification be renewed?",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "When must a sterile gown be changed?",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "Can I wear a watch into the cleanroom?",
+      "top1",
+      "WRONG",
+      "FAIL"
+    ],
+    [
+      "Within how many days must a deviation be closed?",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "How quickly must a critical deviation be informed to QA?",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "What tools are used for root cause analysis of deviations?",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "Can a batch with an open major deviation be released?",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "When is line clearance required?",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "Who verifies the line clearance before the batch starts?",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "What is the action limit for settle plates in Grade A?",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "What is the active air action limit for Grade B?",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "What happens when an environmental monitoring action limit i",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "What temperature is the cold room?",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "On what basis are raw materials dispensed?",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "When is quarantine stock moved to unrestricted use?",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "What is the minimum differential pressure between cleanrooms",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "What should be done on a differential pressure alarm?",
+      "top1",
+      "WRONG",
+      "FAIL"
+    ],
+    [
+      "What light intensity is used for visual inspection of vials?",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "What AQL is applied for critical defects after vial inspecti",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "How often must vial inspectors pass an eye test?",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "Who approves a major change request?",
+      "top1",
+      "WRONG",
+      "FAIL"
+    ],
+    [
+      "What is assessed during change control impact assessment?",
+      "top1",
+      "WRONG",
+      "FAIL"
+    ],
+    [
+      "Is retesting allowed before the Phase I OOS investigation is",
+      "top1",
+      "correct",
+      "PASS"
+    ],
+    [
+      "Who won the cricket world cup in 2023?",
+      "\u2014",
+      "refused",
+      "PASS"
+    ],
+    [
+      "What is the share price of the company today?",
+      "\u2014",
+      "refused",
+      "PASS"
+    ],
+    [
+      "How do I cook biryani?",
+      "\u2014",
+      "refused",
+      "PASS"
+    ],
+    [
+      "What is the salary of a graduate trainee?",
+      "\u2014",
+      "refused",
+      "PASS"
+    ],
+    [
+      "Is retesting allowed before the Phase I OOS investigation is",
+      "\u2014",
+      "refused",
+      "PASS"
+    ]
+  ]
+}
